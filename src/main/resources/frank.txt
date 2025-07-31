@@ -1,0 +1,5 @@
+Frank is involved with the NYJavaSIG.
+He is editing a file called Ingestor.java
+Frank recently released a course on LangChain4j.
+Frank is the chairman of the NYJavaSIG.
+The meetings are once a month.
