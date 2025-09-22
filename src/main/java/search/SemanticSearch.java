@@ -4,24 +4,26 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
-import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 
-import java.io.Console;
-import java.io.File;
+import java.io.*;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import static dev.langchain4j.model.openai.OpenAiEmbeddingModelName.TEXT_EMBEDDING_3_SMALL;
 import static utilities.Common.VDB_NAME;
 
-public class SemanticSearch {
-    private static String query;
 
-    public static void main(String[] args) {
+
+public class SemanticSearch {
+    private final static String configFile = "src/main/resources/SemanticSearch.properties";
+
+    public static void main(String[] args) throws IOException {
 
         File embeddingfile = new File(VDB_NAME);
 
@@ -41,37 +43,68 @@ public class SemanticSearch {
                 .modelName(TEXT_EMBEDDING_3_SMALL)
                 .build();
 
-        String pstring = "\nString> ";
+        String pstring = "String> ";
 
         Set<String> set = Set.of("exit", "quit", "bye");
         Console console = System.console();
 
+        Properties prop = SetProperties(configFile);
+        Integer maxResults = Integer.parseInt(prop.getProperty("SemanticSearch.maxResults"));
+        Double minScore = Double.parseDouble(prop.getProperty("SemanticSearch.minScore"));
+        boolean verbose = Boolean.parseBoolean(prop.getProperty("SemanticSearch.verbose"));
+
         while (true) {
-            query = console.readLine(pstring);
+            String query = console.readLine(pstring);
             if (set.contains(query.toLowerCase()))
                 break;
 
             queryEmbedding = emodel.embed(query).content();
             EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest.builder()
                     .queryEmbedding(queryEmbedding)
-                    .maxResults(10)
-                    .minScore(.6)
+                    .maxResults(maxResults)
+                    .minScore(minScore)
                     .build();
             EmbeddingSearchResult<TextSegment> searchResult = myDB.search(embeddingSearchRequest);
             List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
-            for (EmbeddingMatch<TextSegment> embeddingMatch : matches) {
-                System.out.println(embeddingMatch.embedded().text());
-                System.out.print("["+embeddingMatch.embedded().metadata().getInteger("lineNumber") + ": ");
-                System.out.print(embeddingMatch.embedded().metadata().getString("source")+": ");
-                System.out.println(embeddingMatch.score());
-                System.out.println("=========================================================================");
-
-            }
-
-            //EmbeddingMatch<TextSegment> embeddingMatch = matches.get(0);
-            //TextSegment ts = embeddingMatch.embedded();
-            //System.out.println(ts.metadata());
+            displayMatches(matches, verbose);
         }
+    }
+
+    /**
+     * displayMatches(matches, verbose)
+     *
+     * @param matches - List of matches returned from the EmbeddingStore
+     * @param verbose - When verbose is true, show score and matched text
+     */
+    private static void displayMatches(List<EmbeddingMatch<TextSegment>> matches, boolean verbose) {
+        for (EmbeddingMatch<TextSegment> embeddingMatch : matches) {
+            System.out.print("["+embeddingMatch.embedded().metadata().getString("absolute_directory_path") + ": ");
+            System.out.print(embeddingMatch.embedded().metadata().getString("file_name")+": ");
+            if (verbose) {
+                System.out.print(" " + embeddingMatch.score());
+                System.out.print(" " + embeddingMatch.embedded().text());
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * SetProperties(configFile) - read properties file and create a Properties with the name/values
+     * @param configFile - location of the properties file
+     * @return loaded Properties
+     * @throws IOException
+     */
+    private static Properties SetProperties(String configFile) throws IOException {
+            Properties prop = new Properties();
+            InputStream in = new FileInputStream(configFile);
+
+            prop.load(in);
+
+            for (Enumeration e = prop.propertyNames(); e.hasMoreElements();) {
+                String key = e.nextElement().toString();
+                //System.out.println(key + " = " + prop.getProperty(key));
+            }
+            return prop;
     }
 }
