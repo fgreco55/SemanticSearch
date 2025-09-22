@@ -9,9 +9,21 @@ repositories {
     mavenCentral()
 }
 
+def lc4jVersion = "1.4.0"
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    implementation "dev.langchain4j:langchain4j:${lc4jVersion}"
+    implementation "dev.langchain4j:langchain4j-open-ai:${lc4jVersion}"
+    implementation "dev.langchain4j:langchain4j-google-ai-gemini:${lc4jVersion}"
+    implementation "dev.langchain4j:langchain4j-anthropic:${lc4jVersion}"
+    implementation "dev.langchain4j:langchain4j-mistral-ai:${lc4jVersion}"
+
+    implementation("dev.langchain4j:langchain4j-document-parser-apache-pdfbox:1.4.0-beta10") // PDF → text
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+
 }
 
 test {
