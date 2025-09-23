@@ -60,11 +60,13 @@ public class Ingest {
 
         List<Document> allDocuments = new ArrayList<>();
         // --- Load TXT files ---
-        List<Document> txtDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("**/*.txt"), new TextDocumentParser());
+        List<Document> txtDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("{*.txt,**/*.txt}"), new TextDocumentParser());
+
         addMetadataAndStore(txtDocs, estore, splitter, embeddingModel, allDocuments);
 
         // --- Load PDF files ---
-        List<Document> pdfDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("**/*.pdf"), new ApachePdfBoxDocumentParser());
+        List<Document> pdfDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("{*.pdf,**/*.pdf}"), new ApachePdfBoxDocumentParser());
+
         addMetadataAndStore(pdfDocs, estore, splitter, embeddingModel, allDocuments);
 
         return allDocuments;
