@@ -1,5 +1,7 @@
 package filesystem;
 
+import ch.qos.logback.core.encoder.JsonEscapeUtil;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +39,18 @@ public class FileLister {
 
         for (File entry : entries) {
             boolean highlight = entry.isFile() && matchesExtension(entry.getName(), matchExtensions);
-            printWithIndent(entry.getName(), indentLevel, highlight);
+            //printWithIndent(entry.getName(), indentLevel, highlight);
+            printMatches(entry, highlight);
 
             if (entry.isDirectory()) {
                 listFilesRecursive(entry, indentLevel + 1, matchExtensions);
             }
         }
+    }
+
+    private static void printMatches(File entryName, boolean highlight) {
+        if (highlight)
+            System.out.println(entryName.getAbsolutePath());
     }
 
     private static boolean matchesExtension(String fileName, List<String> matchExtensions) {
