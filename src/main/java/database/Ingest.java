@@ -33,12 +33,8 @@ public class Ingest {
         InMemoryEmbeddingStore<TextSegment> estore = new InMemoryEmbeddingStore<>();
 
         List<Document> mydocs = ingest.loadDocuments(estore, dirname);
-
-        for  (Document document : mydocs) {
-            System.out.print(document.text());
-            System.out.println(document.metadata().toString());
-        }
-        System.out.println("Loaded " + mydocs.size() + " documents into the EmbeddingStore");
+        //ingest.showDocs(mydocs);
+        System.out.println("Loaded " + mydocs.size() + " documents into the EmbeddingStore [" + VDB_NAME + "]");
 
         ingest.mergeAndPersistEmbeddingStores(estore, VDB_NAME);
     }
@@ -145,4 +141,14 @@ public class Ingest {
         }
     }
 
+    /**
+     * showDocs() - display the strings and metadata of all the Documents
+     * @param mydocs - the list of Documents to be stored in the EmbeddingStore
+     */
+    public void showDocs(List<Document> mydocs) {
+        for  (Document document : mydocs) {
+            System.out.print(document.text());                // just show what text was saved in the EmbeddingStore
+            System.out.println(document.metadata().toString()); // display the metadata for each string stored
+        }
+    }
 }
