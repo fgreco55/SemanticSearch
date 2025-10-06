@@ -25,4 +25,4 @@ The rule ensures the batter gets a fair chance to swing at the pitch without bei
 ________________
 
 
-⚾ Example: Bases empty, 2 outs. The batter swings, and the catcher’s glove is hit by the bat. The umpire calls “catcher’s interference,” the batter is awarded first base, and the inning continues.
+Example: Bases empty, 2 outs. The batter swings, and the catcher’s glove is hit by the bat. The umpire calls “catcher’s interference,” the batter is awarded first base, and the inning continues.
