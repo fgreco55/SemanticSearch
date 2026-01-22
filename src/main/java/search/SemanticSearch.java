@@ -18,8 +18,6 @@ import java.util.Set;
 import static dev.langchain4j.model.openai.OpenAiEmbeddingModelName.TEXT_EMBEDDING_3_SMALL;
 import static utilities.Common.VDB_NAME;
 
-
-
 public class SemanticSearch {
     private final static String configFile = "src/main/resources/SemanticSearch.properties";
 
@@ -36,22 +34,36 @@ public class SemanticSearch {
         }
 
         InMemoryEmbeddingStore<TextSegment> myDB = InMemoryEmbeddingStore.fromFile(VDB_NAME);
-        Embedding queryEmbedding;
 
         EmbeddingModel emodel = OpenAiEmbeddingModel.builder()  // move to later
                 .apiKey(System.getenv("OPENAI_API_KEY"))
                 .modelName(TEXT_EMBEDDING_3_SMALL)
                 .build();
 
-        String pstring = "String> ";
+        runLoop(emodel, myDB, "String> ");
+    }
 
+    /**
+     * runLoop()
+     */
+    public static void runLoop(EmbeddingModel emodel, InMemoryEmbeddingStore<TextSegment> myDB, String pstring) {
+        Integer maxResults;         // Get these parameters from the config file
+        Double minScore;
+        boolean verbose;
+
+        try {
+            Properties prop = SetProperties(configFile);
+            maxResults = Integer.parseInt(prop.getProperty("SemanticSearch.maxResults", "10"));
+            minScore = Double.parseDouble(prop.getProperty("SemanticSearch.minScore", "5"));
+            verbose = Boolean.parseBoolean(prop.getProperty("SemanticSearch.verbose",  "false"));
+        } catch (IOException e) {
+            System.err.println("Error reading config file: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        Embedding queryEmbedding;
         Set<String> set = Set.of("exit", "quit", "bye");
         Console console = System.console();
-
-        Properties prop = SetProperties(configFile);
-        Integer maxResults = Integer.parseInt(prop.getProperty("SemanticSearch.maxResults"));
-        Double minScore = Double.parseDouble(prop.getProperty("SemanticSearch.minScore"));
-        boolean verbose = Boolean.parseBoolean(prop.getProperty("SemanticSearch.verbose"));
 
         while (true) {
             String query = console.readLine(pstring);
@@ -61,9 +73,10 @@ public class SemanticSearch {
             queryEmbedding = emodel.embed(query).content();
             EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest.builder()
                     .queryEmbedding(queryEmbedding)
-                    .maxResults(maxResults)
-                    .minScore(minScore)
+                    .maxResults(maxResults)             // max number of results
+                    .minScore(minScore)                 // only return results higher
                     .build();
+
             EmbeddingSearchResult<TextSegment> searchResult = myDB.search(embeddingSearchRequest);
             List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
@@ -95,7 +108,7 @@ public class SemanticSearch {
      * @return loaded Properties
      * @throws IOException
      */
-    private static Properties SetProperties(String configFile) throws IOException {
+    public static Properties SetProperties(String configFile) throws IOException {
             Properties prop = new Properties();
             InputStream in = new FileInputStream(configFile);
 

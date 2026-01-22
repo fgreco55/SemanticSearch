@@ -25,20 +25,16 @@ import static utilities.Common.VDB_NAME;
 public class Ingest {
     public static void main(String[] args) {
         //String dirname = args[1];
-        String dirname = "src/main/";
+        String dirname = "src/main/";       // hard-coded just for educational purposes
         Ingest ingest = new Ingest();
 
-        System.err.println("PWD ->" + System.getProperty("user.dir"));
+        System.err.println("PWD ->" + System.getProperty("user.dir"));      // just for teaching purposes
 
         InMemoryEmbeddingStore<TextSegment> estore = new InMemoryEmbeddingStore<>();
 
         List<Document> mydocs = ingest.loadDocuments(estore, dirname);
-
-        for  (Document document : mydocs) {
-            System.out.print(document.text());
-            System.out.println(document.metadata().toString());
-        }
-        System.out.println("Loaded " + mydocs.size() + " documents into the EmbeddingStore");
+        //ingest.showDocs(mydocs);
+        System.out.println("Loaded " + mydocs.size() + " documents into the EmbeddingStore [" + VDB_NAME + "]");
 
         ingest.mergeAndPersistEmbeddingStores(estore, VDB_NAME);
     }
@@ -59,19 +55,26 @@ public class Ingest {
         DocumentSplitter splitter = DocumentSplitters.recursive(300, 0);
 
         List<Document> allDocuments = new ArrayList<>();
+
         // --- Load TXT files ---
         List<Document> txtDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("{*.txt,**/*.txt}"), new TextDocumentParser());
-
         addMetadataAndStore(txtDocs, estore, splitter, embeddingModel, allDocuments);
 
         // --- Load PDF files ---
         List<Document> pdfDocs = FileSystemDocumentLoader.loadDocumentsRecursively(dirname, glob("{*.pdf,**/*.pdf}"), new ApachePdfBoxDocumentParser());
-
         addMetadataAndStore(pdfDocs, estore, splitter, embeddingModel, allDocuments);
 
         return allDocuments;
     }
 
+    /**
+     * addMetadataAndStore() - split, get the embeddings and store each document
+     * @param docs
+     * @param store
+     * @param splitter
+     * @param embeddingModel
+     * @param collector
+     */
     private static void addMetadataAndStore(List<Document> docs,
                                             EmbeddingStore<TextSegment> store,
                                             DocumentSplitter splitter,
@@ -93,10 +96,22 @@ public class Ingest {
             System.out.println("Ingested file: " + fileName);
         }
     }
+
+    /**
+     *
+     * @param glob(String s) - match filenames based on glob-string (global search filename-matching string)
+     * @return
+     */
     public static PathMatcher glob(String glob) {
         return FileSystems.getDefault().getPathMatcher("glob:" + glob);
     }
 
+    /**
+     * merge(existing, new) - merge the old embedding-store with the new embedding-store
+     * @param existing
+     * @param newDB
+     * @return
+     */
     private InMemoryEmbeddingStore<TextSegment> merge(InMemoryEmbeddingStore<TextSegment> existing, InMemoryEmbeddingStore<TextSegment> newDB) {
         if (existing == null) {
             return newDB;
@@ -109,6 +124,11 @@ public class Ingest {
         }
     }
 
+    /**
+     * mergeAndPersistEmbeddingStores() - merge and save the embedding-store
+     * @param newEmbeddingStore
+     * @param filePathOriginalEmbeddingStore
+     */
     public void mergeAndPersistEmbeddingStores(InMemoryEmbeddingStore<TextSegment> newEmbeddingStore, String filePathOriginalEmbeddingStore) {
 
         File origEmbeddingFile = new File(filePathOriginalEmbeddingStore);
@@ -121,4 +141,14 @@ public class Ingest {
         }
     }
 
+    /**
+     * showDocs() - display the strings and metadata of all the Documents
+     * @param mydocs - the list of Documents to be stored in the EmbeddingStore
+     */
+    public void showDocs(List<Document> mydocs) {
+        for  (Document document : mydocs) {
+            System.out.print(document.text());                // just show what text was saved in the EmbeddingStore
+            System.out.println(document.metadata().toString()); // display the metadata for each string stored
+        }
+    }
 }
