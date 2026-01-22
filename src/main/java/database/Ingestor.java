@@ -47,7 +47,8 @@ public class Ingestor {
     }
 
     public static void ingestFile(InMemoryEmbeddingStore<TextSegment> estore, EmbeddingModel emodel, String filepath) throws IOException {
-        Path filePath = Path.of(filepath);
+       // Path filePath = Path.of(filepath);      // src/main/resources + filepath
+        Path filePath = Path.of("src/main/resources/" + filepath);
         String content = Files.readString(filePath);
 
         // Regex to split sentences by '.', '!', or '?' followed by whitespace
