@@ -71,6 +71,7 @@ public class Ingest {
 
         return allDocuments;
     }
+
     private static void addMetadataAndStore(List<Document> docs,
                                             EmbeddingStore<TextSegment> store,
                                             DocumentSplitter splitter,
