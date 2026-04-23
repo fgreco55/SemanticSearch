@@ -10,10 +10,12 @@ import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 
 import java.io.*;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
+
+import utilities.Common;
 
 import static dev.langchain4j.model.openai.OpenAiEmbeddingModelName.TEXT_EMBEDDING_3_SMALL;
 import static utilities.Common.VDB_NAME;
@@ -52,7 +54,7 @@ public class SemanticSearch {
         boolean verbose;
 
         try {
-            Properties prop = SetProperties(configFile);
+            Properties prop = Common.SetProperties(configFile);
             maxResults = Integer.parseInt(prop.getProperty("SemanticSearch.maxResults", "10"));
             minScore = Double.parseDouble(prop.getProperty("SemanticSearch.minScore", "5"));
             verbose = Boolean.parseBoolean(prop.getProperty("SemanticSearch.verbose",  "false"));
@@ -63,10 +65,11 @@ public class SemanticSearch {
 
         Embedding queryEmbedding;
         Set<String> set = Set.of("exit", "quit", "bye");
-        Console console = System.console();
+        Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            String query = console.readLine(pstring);
+            System.out.print(pstring);
+            String query = scanner.nextLine();
             if (set.contains(query.toLowerCase()))
                 break;
 
@@ -102,22 +105,4 @@ public class SemanticSearch {
         }
     }
 
-    /**
-     * SetProperties(configFile) - read properties file and create a Properties with the name/values
-     * @param configFile - location of the properties file
-     * @return loaded Properties
-     * @throws IOException
-     */
-    public static Properties SetProperties(String configFile) throws IOException {
-            Properties prop = new Properties();
-            InputStream in = new FileInputStream(configFile);
-
-            prop.load(in);
-
-            for (Enumeration e = prop.propertyNames(); e.hasMoreElements();) {
-                String key = e.nextElement().toString();
-                //System.out.println(key + " = " + prop.getProperty(key));
-            }
-            return prop;
-    }
 }
